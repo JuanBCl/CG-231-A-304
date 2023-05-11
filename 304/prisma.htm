@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Figura 3D mas de 10 caras</title>
+  <style>
+    body {
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <script type="module">
+    import * as THREE from 'https://sebastiann16.github.io/CompG/three.module.js';
+    import { OrbitControls } from 'https://sebastiann16.github.io/CompG/OrbitControls.js';
+  
+    var WIDTH = window.innerWidth;
+    var HEIGHT = window.innerHeight;
+
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(WIDTH, HEIGHT);
+    renderer.setClearColor(0xDDDDDD, 1);
+    document.body.appendChild(renderer.domElement);
+
+    var scene = new THREE.Scene();
+
+    var size = 500;
+        var divisions = 100;
+        var origin = new THREE.Vector3( 0, 0, 0 );
+        var x = new THREE.Vector3( 1, 0, 0 );
+        var y = new THREE.Vector3( 0, 1, 0 );
+        var z = new THREE.Vector3( 0, 0, 1 );
+        var color2 = new THREE.Color( 0x333333 );  /// 0x333333
+        var colorR = new THREE.Color( 0xAA0000 );
+        var colorG = new THREE.Color( 0x00AA00 );
+        var colorB = new THREE.Color( 0x0000AA );
+
+        //Crear la Grilla
+        var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2);
+        gridHelperXZ.position.y = -1;
+        scene.add(gridHelperXZ);
+
+    var camera = new THREE.PerspectiveCamera(80, WIDTH / HEIGHT);
+    camera.position.z = 5; //z
+    camera.position.y = 5; //y
+    camera.position.x = 5;
+    scene.add(camera);
+    const light = new THREE.AmbientLight(0x505050, 50);
+    scene.add(light);
+
+    // Crear el objeto BufferGeometry y agregarle los vértices
+const geometry = new THREE.BufferGeometry();
+const vertices = [];
+
+const radius = 1;
+const numFaces = 5;
+const angle = Math.PI * 2 / numFaces;
+
+for (let i = 0; i < numFaces; i++) {
+  const x = radius * Math.cos(angle * i);
+  const y = radius * Math.sin(angle * i);
+  const z = -radius * Math.sin(Math.PI / 5);
+  vertices.push(x, y, z);
+}
+
+// Asegurarse de que todas las puntas estén en el mismo punto
+const center = new THREE.Vector3(0, 0, 0);
+for (let i = 0; i < vertices.length; i += 3) {
+  const vector = new THREE.Vector3(vertices[i], vertices[i + 1], vertices[i + 2]);
+  center.add(vector);
+}
+center.divideScalar(numFaces);
+for (let i = 0; i < vertices.length; i += 3) {
+  vertices[i] -= center.x;
+  vertices[i + 1] -= center.y;
+  vertices[i + 2] -= center.z;
+}
+
+// Crear los buffers de posición y de índices
+const positions = new Float32Array(vertices);
+const indices = new Uint32Array(numFaces * 3);
+
+// Crear las caras a partir de los vértices
+for (let i = 0; i < numFaces; i++) {
+  indices[i * 3] = 0;
+  indices[i * 3 + 1] = i + 1;
+  indices[i * 3 + 2] = i === numFaces - 1 ? 1 : i + 2;
+}
+
+// Agregar los buffers a la geometría
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+
+// Crear el material y el mesh
+const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const mesh = new THREE.Mesh(geometry, material);
+
+// Agregar el mesh a la escena
+scene.add(mesh);
+
+// Renderizar la escena
+renderer.render(scene, camera);
+
+
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+
+    function animate() {
+
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera)
+    }
+    animate();
+
+
+  </script>
+
+</body>
+
+</html>
